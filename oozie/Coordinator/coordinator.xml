@@ -1,0 +1,31 @@
+
+<coordinator-app name="Verizon-SamsungS7-Coord-JOB"
+  frequency="0 * * * *"
+  start="${start_date}" end="${end_date}" timezone="America/New_York"
+  xmlns="uri:oozie:coordinator:0.2"
+  >
+  <controls>
+    <timeout>0</timeout>
+    <concurrency>1</concurrency>
+    <execution>FIFO</execution>
+  </controls>
+  <action>
+    <workflow>
+      <app-path>${wf_application_path}</app-path>
+      <configuration>
+        <property>
+            <name>oozie.use.system.libpath</name>
+            <value>True</value>
+        </property>
+        <property>
+            <name>start_date</name>
+            <value>${start_date}</value>
+        </property>
+        <property>
+            <name>end_date</name>
+            <value>${end_date}</value>
+        </property>
+      </configuration>
+   </workflow>
+  </action>
+</coordinator-app>
