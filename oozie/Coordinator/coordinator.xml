@@ -1,6 +1,6 @@
 
 <coordinator-app name="Verizon-SamsungS7-Coord-JOB"
-  frequency="* */1 * * *"
+  frequency="*/0 * * * *"
   start="${start_date}" end="${end_date}" timezone="America/New_York"
   xmlns="uri:oozie:coordinator:0.2"
   >
