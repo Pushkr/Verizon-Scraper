@@ -1,0 +1,61 @@
+<workflow-app name="wf-verizon-scraper" xmlns="uri:oozie:workflow:0.5">
+    <start to="shell-c375"/>
+    <action name="Kill">
+        <email xmlns="uri:oozie:email-action:0.2">
+            <to>sample@email.com</to>
+            <subject>Job failed</subject>
+            <body></body>
+        </email>
+        <ok to="Kill-kill"/>
+        <error to="Kill-kill"/>
+    </action>
+    <kill name="Kill-kill">
+        <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <action name="shell-c375">
+        <shell xmlns="uri:oozie:shell-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>/usr/local/bin/python3.4 script/scraper.py</exec>
+              <capture-output/>
+        </shell>
+        <ok to="shell-fd57"/>
+        <error to="Kill"/>
+    </action>
+    <action name="shell-fd57">
+        <shell xmlns="uri:oozie:shell-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>hadoop fs -put ~/data/$(date +&#39;%Y/%m/%d/%H&#39;)/* /user/cloudera/verizon/indata</exec>
+              <capture-output/>
+        </shell>
+        <ok to="spark-3c06"/>
+        <error to="Kill"/>
+    </action>
+    <action name="spark-3c06">
+        <spark xmlns="uri:oozie:spark-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <master>yarn</master>
+            <mode>client</mode>
+            <name>MySpark</name>
+              <class>main</class>
+            <jar>/user/cloudera/wordCount.py</jar>
+        </spark>
+        <ok to="hive2-6d96"/>
+        <error to="Kill"/>
+    </action>
+    <action name="hive2-6d96" cred="hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <jdbc-url>jdbc:hive2://quickstart.cloudera:10000/default</jdbc-url>
+            <script>/user/cloudera/verizon/hiveload.sql</script>
+              <param>TABLE=verizon.samsung7</param>
+              <param>LCTN=/user/verizon/outdata</param>
+        </hive2>
+        <ok to="End"/>
+        <error to="Kill"/>
+    </action>
+    <end name="End"/>
+</workflow-app>
